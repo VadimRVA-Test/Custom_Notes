@@ -1,57 +1,57 @@
 import pytest
+from api.registration_users import RegistrationUsers
+from api.authorization_users import AuthorizationUsers
+from data.json_for_post import data_user, body_note
+from api.get_notes import GetNotes
+from api.create_notes import CreateNotes
+from api.delete_notes import DeleteNote
 
-from registration_users import RegistrationUsers
-from authorization_users import AuthorizationUsers
-from data.json_for_post import JSON_User_1, JSON_User_2, body_note
-from get_notes import GetNotes
-from create_notes import CreateNotes
-from delete_notes import DeleteNote
+
+@pytest.fixture
+def obj_registration():
+    return RegistrationUsers()
 
 
 @pytest.fixture
-def registration():
-    email, password, username = JSON_User_1["email"], JSON_User_1["password"], JSON_User_1["username"]
-    response = RegistrationUsers().registration_user(email, password, username)
-    return response
-
-@pytest.fixture
-def token_user():
+def obj_authorization():
     return AuthorizationUsers()
 
-@pytest.fixture
-def token(token_user):
-    token = token_user.get_token(email=JSON_User_2["email"], password=JSON_User_2["password"])
-    return token
 
 @pytest.fixture
-def authorization(token_user):
-    response_auth = token_user.authorization_j(email=JSON_User_2["email"], password=JSON_User_2["password"])
-    return response_auth
+def token(obj_authorization):
+    token = obj_authorization.get_token(email=data_user["email"], password=data_user["password"])
+    return token
+
 
 @pytest.fixture
 def get_notes(token):
-    response = GetNotes(token).get_all_notes()
-    return response
+    return GetNotes(token)
+
 
 @pytest.fixture
-def create_notes(token):
-    response = CreateNotes(token).create_notes(content=body_note["content"], title=body_note["title"])
-    return response
+def obj_create_notes(token):
+    return CreateNotes(token)
+
 
 @pytest.fixture
-def delete_note(token, get_notes):
-    if len(get_notes.json()) >= 1:
-        response = DeleteNote(token).delete_notes(get_notes.json()[-1]["id"])
-    else:
-        response = DeleteNote(token).delete_notes(get_notes)
-    return response
+def delete_note(token):
+    return DeleteNote(token)
+
 
 @pytest.fixture
-def create_delete_a(create_notes, token, get_notes):
-    yield create_notes
-    DeleteNote(token).delete_notes(get_notes.json()[-1]["id"])
+def id_note(obj_create_notes, get_notes):
+    return get_notes.get_not_id_by_title(title=body_note["title"])
 
 
+@pytest.fixture
+def teardown_note(delete_note):
+    list_name_nodes = []
+    yield list_name_nodes
+    for note in list_name_nodes:
+        delete_note.delete_notes(note)
 
 
-
+@pytest.fixture
+def setup_teardown_note(id_note, teardown_note):
+    teardown_note.append(id_note)
+    return id_note

@@ -2,10 +2,8 @@ import requests
 
 
 class BaseApi:
-
-    def __init__(self, token=None):
-        self.BASE_URL = "http://185.240.103.201:8000/"
-        self.token = token
+    BASE_URL = "http://185.240.103.201:8000/"
+    token = None
 
     def _requests(self, method: str, endpoint=None, note_id=None, need_token=False, json=None):
         if note_id:

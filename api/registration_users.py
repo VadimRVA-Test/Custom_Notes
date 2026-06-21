@@ -1,4 +1,4 @@
-from base_api import BaseApi
+from api.base_api import BaseApi
 
 
 class RegistrationUsers(BaseApi):
