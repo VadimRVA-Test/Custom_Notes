@@ -1,25 +1,36 @@
+from data.json_for_post import data_user, data_user2
+
+
 class TestUsers:
 
-    def test_registration_201(self, registration):
-        assert registration.status_code == 201
-        assert registration.json()["message"] == "Успешная регистрация!"
+    def test_registration(self, obj_registration):
+        email, password, username = data_user2["email"], data_user["password"], data_user2["username"]
+        response = obj_registration.registration_user(email, password, username)
+        assert response.status_code == 201, f"Ожидали получить статус код: 201, получили: {response.status_code}"
+        assert response.json()["message"] == "Успешная регистрация!", (
+            f"Ожидали получить сообщение:Успешная регистрация! Получили: {response.json()["message"]}")
 
-    def test_registration_status_code_409(self, registration):
-        assert registration.status_code == 201, (
-            f"Ожидали получить статус код: 201, получили: {registration.status_code}")
+    def test_registration_resource_conflict(self, obj_registration):
+        email, password, username = data_user["email"], data_user["password"], data_user["username"]
+        response = obj_registration.registration_user(email, password, username)
+        assert response.status_code == 409, (
+            f"Ожидали получить статус код: 409, получили: {response.status_code}")
+        assert response.json()["message"] == "Пользователь с таким email уже существует", (
+            f"Ожидали получить сообщение: Пользователь с таким email уже существует "
+            f"Получили: {response.json()["message"]}")
 
-    def test_registration_409_message(self, registration):
-        assert registration.json()["message"] == "Успешная регистрация!", (
-            f"Ожидали получить сообщение: Успешная регистрация! Получили: {registration.json()["message"]}")
+    def test_authorization(self, obj_authorization):
+        email, password = data_user["email"], data_user["password"]
+        response = obj_authorization.authorization_user(email, password)
+        assert response.status_code == 200, f"Ожидали получить статус код: 200, получили: {response.status_code}"
+        assert len(response.json()["token"]) == 125, f"Ожидали получить token получили: {response.json()["message"]}"
+        assert type(response.json()["token"]) == str, f"Ожидали получить token получили: {response.json()["message"]}"
 
-    def test_authorization(self, authorization):
-        assert authorization.status_code == 200
-        assert type(authorization.json()["token"]) == str
-
-    def test_authorization_status_code_401(self, authorization):
-        assert authorization.status_code == 200, (
-            f"Ожидали получить статус код: 201, получили: {authorization.status_code}")
-
-    def test_authorization_401_message(self, authorization):
-        assert type(authorization.json()["token"]) == str, (
-            f"Ожидали получить тип данных str по ключу token Получили: {authorization.json()["message"]}")
+    def test_authorization_token_is_empty(self, obj_authorization):
+        email, password = data_user2["email"], data_user2["password"]
+        response = obj_authorization.authorization_user(email, password)
+        assert response.status_code == 401, (
+            f"Ожидали получить статус код: 401, получили: {response.status_code}")
+        assert response.json()["message"] == "Ошибка авторизации... Пожалуйста, проверь почту или пароль", (
+            f"Ожидали получить: Ошибка авторизации... Пожалуйста, проверь почту или пароль"
+            f"Получили: {response.json()["message"]}")

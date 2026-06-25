@@ -3,8 +3,8 @@ from api.registration_users import RegistrationUsers
 from api.authorization_users import AuthorizationUsers
 from data.json_for_post import data_user, data_user2, body_note
 from api.get_notes import GetNotes
-from api.create_notes import CreateNotes
-from api.delete_notes import DeleteNote
+from api.create_note import CreateNotes
+from api.delete_note import DeleteNote
 
 
 @pytest.fixture
@@ -13,30 +13,8 @@ def obj_registration():
 
 
 @pytest.fixture
-def registration(obj_registration):
-    email, password, username = data_user["email"], data_user["password"], data_user["username"]
-    response = obj_registration.registration_user(email, password, username)
-    return response
-
-
-@pytest.fixture
-def registration2(obj_registration, obj_authorization):
-    email, password, username = data_user2["email"], data_user2["password"], data_user["username"]
-    obj_registration.registration_user(email, password, username)
-    response = obj_authorization.authorization_user(email, password)
-    return response.json()["token"]
-
-
-@pytest.fixture
 def obj_authorization():
     return AuthorizationUsers()
-
-
-@pytest.fixture
-def authorization(obj_authorization):
-    email, password = data_user["email"], data_user["password"]
-    response = obj_authorization.authorization_user(email, password)
-    return response
 
 
 @pytest.fixture
@@ -46,14 +24,8 @@ def token(obj_authorization):
 
 
 @pytest.fixture
-def obj_create_notes(token):
+def obj_create_note(token):
     return CreateNotes(token)
-
-
-@pytest.fixture
-def create_notes():
-    note = {"content": body_note["content"], "title": body_note["title"]}
-    return note
 
 
 @pytest.fixture
@@ -67,26 +39,28 @@ def obj_delete_note(token):
 
 
 @pytest.fixture
-def obj_delete_note_409(registration2):
-    return DeleteNote(registration2)
+def del_resource_conflict(obj_registration, obj_authorization, obj_delete_note):
+    email, password, username = data_user2["email"], data_user2["password"], data_user2["username"]
+    obj_registration.registration_user(email, password, username)
+    token2 = obj_authorization.authorization_user(email, password)
+    obj_delete_note.token = token2.json()["token"]
+    return obj_delete_note
 
 
 @pytest.fixture
-def id_note(obj_get_notes, obj_create_notes):
-    note_id = obj_get_notes.get_all_notes_status_code_200()
-    if len(note_id.json()) == 0:
-        obj_create_notes.create_notes_201(body_note)
-        note_id = obj_get_notes.get_all_notes_status_code_200()
-        return note_id.json()[0]["id"]
-    return note_id.json()[0]["id"]
+def id_note(obj_get_notes, obj_create_note):
+    need_token = True
+    obj_create_note.create_note(need_token, body_note)
+    return obj_get_notes.get_not_id_by_title(need_token, body_note["title"])
 
 
 @pytest.fixture
 def teardown_note(obj_delete_note):
     list_name_nodes = []
+    need_token = True
     yield list_name_nodes
     for note in list_name_nodes:
-        obj_delete_note.delete_notes_status_code_200(note)
+        obj_delete_note.delete_note(need_token, note)
 
 
 @pytest.fixture
