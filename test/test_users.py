@@ -1,5 +1,3 @@
-import email
-
 from test.data.json_for_post import data_user, data_user2
 
 
