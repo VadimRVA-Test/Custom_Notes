@@ -1,7 +1,7 @@
 import pytest
 from api.registration_users import RegistrationUsers
 from api.authorization_users import AuthorizationUsers
-from data.json_for_post import data_user, data_user2, body_note
+from test.data.json_for_post import data_user, data_user2, body_note
 from api.get_notes import GetNotes
 from api.create_note import CreateNotes
 from api.delete_note import DeleteNote
@@ -49,18 +49,16 @@ def del_resource_conflict(obj_registration, obj_authorization, obj_delete_note):
 
 @pytest.fixture
 def id_note(obj_get_notes, obj_create_note):
-    need_token = True
-    obj_create_note.create_note(need_token, body_note)
-    return obj_get_notes.get_not_id_by_title(need_token, body_note["title"])
+    obj_create_note.create_note(True, body_note)
+    return obj_get_notes.get_not_id_by_title(True, body_note["title"])
 
 
 @pytest.fixture
 def teardown_note(obj_delete_note):
     list_name_nodes = []
-    need_token = True
     yield list_name_nodes
     for note in list_name_nodes:
-        obj_delete_note.delete_note(need_token, note)
+        obj_delete_note.delete_note(True, note)
 
 
 @pytest.fixture
