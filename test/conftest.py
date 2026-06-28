@@ -18,12 +18,6 @@ def obj_authorization():
 
 
 @pytest.fixture
-def token(obj_authorization):
-    token = obj_authorization.get_token(email=data_user["email"], password=data_user["password"])
-    return token
-
-
-@pytest.fixture
 def obj_create_note(token):
     return CreateNotes(token)
 
@@ -39,12 +33,15 @@ def obj_delete_note(token):
 
 
 @pytest.fixture
-def del_resource_conflict(obj_registration, obj_authorization, obj_delete_note):
-    email, password, username = data_user2["email"], data_user2["password"], data_user2["username"]
-    obj_registration.registration_user(email, password, username)
-    token2 = obj_authorization.authorization_user(email, password)
-    obj_delete_note.token = token2.json()["token"]
-    return obj_delete_note
+def obj_del_res_conf(obj_registration, obj_authorization, obj_delete_note):
+    obj_registration.registration_user(data_user2["email"], data_user2["password"], data_user2["username"])
+    return DeleteNote(obj_authorization.get_token(data_user2["email"], data_user2["password"]))
+
+
+@pytest.fixture
+def token(obj_authorization):
+    token = obj_authorization.get_token(data_user["email"], data_user["password"])
+    return token
 
 
 @pytest.fixture
