@@ -1,7 +1,7 @@
 import pytest
 from api.registration_users import RegistrationUsers
 from api.authorization_users import AuthorizationUsers
-from test.data.json_for_post import data_user, data_user2, body_note
+from test.data.json_for_post import data_user2, data_user3, body_note
 from api.get_notes import GetNotes
 from api.create_note import CreateNotes
 from api.delete_note import DeleteNote
@@ -33,14 +33,14 @@ def obj_delete_note(token):
 
 
 @pytest.fixture
-def obj_del_res_conf(obj_registration, obj_authorization, obj_delete_note):
-    obj_registration.registration_user(data_user2["email"], data_user2["password"], data_user2["username"])
-    return DeleteNote(obj_authorization.get_token(data_user2["email"], data_user2["password"]))
+def token(obj_authorization):
+    token = obj_authorization.get_token(data_user2["email"], data_user2["password"])
+    return token
 
 
 @pytest.fixture
-def token(obj_authorization):
-    token = obj_authorization.get_token(data_user["email"], data_user["password"])
+def second_token(obj_authorization):
+    token = obj_authorization.get_token(data_user3["email"], data_user3["password"])
     return token
 
 
