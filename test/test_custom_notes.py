@@ -48,7 +48,6 @@ class TestNotes:
             f" Получили: {response.json()["message"]}")
 
     def test_delete_note(self, obj_delete_note, id_note, obj_get_notes):
-        print(id_note)
         response = obj_delete_note.delete_note(True, id_note)
         assert response.status_code == 200, f"Ожидали статус код: 200 Получили: {response.status_code}"
         assert response.json()["message"] == "Note deleted!", (
@@ -62,16 +61,18 @@ class TestNotes:
         assert response.json()["message"] == "Token is missing!", (
             f"Ожидали получить сообщение: Token is missing! Получили: {response.json()["message"]}")
 
-    def test_delete_notes_invalid_token(self, obj_delete_note, setup_teardown_note):
+    def test_delete_notes_invalid_token(self, obj_delete_note, token, setup_teardown_note):
         obj_delete_note.token = "shg"
         response = obj_delete_note.delete_note(True, setup_teardown_note)
+        obj_delete_note.token = token
         assert response.status_code == 403, f"Ожидали статус код: 403 Получили: {response.status_code}"
         assert response.json()["message"] == "Token is invalid or expired!", (
             f"Ожидали получить сообщение: Token is invalid or expired! Получили: {response.json()["message"]}")
 
-    def test_del_notes_resource_conflict(self, setup_teardown_note, obj_delete_note, second_token):
+    def test_del_notes_resource_conflict(self, setup_teardown_note, obj_delete_note, token, second_token):
         obj_delete_note.token = second_token
         response = obj_delete_note.delete_note(True, setup_teardown_note)
+        obj_delete_note.token = token
         assert response.status_code == 409, f"Ожидали статус код: 409 Получили: {response.status_code}"
         assert response.json()["message"] == "Not authorized to delete this note", (
             f"Ожидали получить сообщение: Note deleted! Получили: {response.json()["message"]}")
